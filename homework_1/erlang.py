@@ -19,7 +19,7 @@ m = 14
 t = 0.125
 def erlang_sample(n):
     sample = []
-    for i in range(10):
+    for i in range(n):
         k = erlang_rand_variable(m, t)
         sample.append(k)
     return sample
