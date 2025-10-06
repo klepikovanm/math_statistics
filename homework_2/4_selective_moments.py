@@ -22,12 +22,12 @@ for distribution, data in result.items():
                 s += (i - mean) ** 2
             sample_variance[distribution][len(sample)].append(round(s / len(sample), 5))
 
-print("ГЕОМЕТРИЧЕСКОЕ РАПРЕДЕЛЕНИЕ:\nВыборочное среднее\n",sample_mean["geometric"])
-print("Математическое ожидание: ", round((1 / 0.45), 5))
-print("Выборочная дисперсия\n",sample_variance["geometric"])
+print("ГЕОМЕТРИЧЕСКОЕ РАПРЕДЕЛЕНИЕ\nВыборочное среднее:\n",sample_mean["geometric"])
+print("Математическое ожидание: ", round((1 / 0.45), 5), "\n")
+print("Выборочная дисперсия:\n",sample_variance["geometric"])
 print("Дисперсия: ", round(((1 - 0.45) / 0.45**2), 5), "\n\n")
 
-print("РАСПРЕДЕЛЕНИЕ ЭРЛАНГА\nВыборочное среднее\n",sample_mean["erlang"])
-print("Математическое ожидание: ", 14 / (1/8))
-print("Выборочная дисперсия\n",sample_variance["erlang"])
+print("РАСПРЕДЕЛЕНИЕ ЭРЛАНГА\nВыборочное среднее:\n",sample_mean["erlang"])
+print("Математическое ожидание: ", 14 / (1/8), "\n")
+print("Выборочная дисперсия:\n",sample_variance["erlang"])
 print("Дисперсия: ", 14 / (1/8)**2)
