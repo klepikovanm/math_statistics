@@ -2,6 +2,10 @@ import json
 
 """4. Вычисление выборочных моментов"""
 
+p = 0.45
+m = 14
+t = 1/8
+
 with open('sample_generation.json', 'r', encoding='utf-8') as f:
     result = json.load(f)
 
@@ -23,11 +27,11 @@ for distribution, data in result.items():
             sample_variance[distribution][len(sample)].append(round(s / len(sample), 5))
 
 print("ГЕОМЕТРИЧЕСКОЕ РАПРЕДЕЛЕНИЕ\nВыборочное среднее:\n",sample_mean["geometric"])
-print("Математическое ожидание: ", round((1 / 0.45), 5), "\n")
+print("Математическое ожидание: ", round((1 / p), 5), "\n")
 print("Выборочная дисперсия:\n",sample_variance["geometric"])
-print("Дисперсия: ", round(((1 - 0.45) / 0.45**2), 5), "\n\n")
+print("Дисперсия: ", round(((1 - p) / p**2), 5), "\n\n")
 
 print("РАСПРЕДЕЛЕНИЕ ЭРЛАНГА\nВыборочное среднее:\n",sample_mean["erlang"])
-print("Математическое ожидание: ", 14 / (1/8), "\n")
+print("Математическое ожидание: ", m / t, "\n")
 print("Выборочная дисперсия:\n",sample_variance["erlang"])
-print("Дисперсия: ", 14 / (1/8)**2)
+print("Дисперсия: ", m / t**2)

@@ -8,6 +8,7 @@ import numpy as np
 p = 0.45
 m = 14
 t = 1/8
+
 def empirical_func(distribution, size, number): # Поиск значний для создания графика
     with open('sample_generation.json', 'r') as f:
         result = json.load(f)
