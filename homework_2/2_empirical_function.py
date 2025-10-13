@@ -20,16 +20,22 @@ def empirical_func(distribution, size, number): # Поиск значний дл
         k_values = np.arange(1, max(sample) + 1)
         distribution_law = []
         for k in k_values:
-            probability = p * (1 - p) ** (k - 1)
-            distribution_law.append(probability)
+            F = 1 - (1 - p) ** k # P(X ≤ k) = 1 - ( 1 - p)^k
+            distribution_law.append(F)
         dist.append(k_values)
         dist.append(distribution_law)
     elif distribution == 'erlang':
         name = 'Распределение Эрланга'
         x_values = np.linspace(0, max(sample), 50)
-        probability_density = (t ** m * x_values ** (m - 1) * np.exp(-t * x_values)) / math.factorial(m - 1)
+        probability = []
+        for x in x_values:
+            sum_term = 0
+            for k in range(m):
+                sum_term += (t * x) ** k / math.factorial(k)
+            F = 1 - math.exp(-t * x) * sum_term # F = 1 - e^(-t*x) * Σ[(t*x)^k / k!] для k=0 до m-1
+            probability.append(F)
         dist.append(x_values)
-        dist.append(probability_density)
+        dist.append(probability)
     sorted_sample = np.sort(sample)
     F = np.arange(1, size + 1) / size
 
