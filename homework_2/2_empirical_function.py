@@ -13,11 +13,12 @@ def empirical_func(distribution, size, number): # Поиск значний дл
     with open('sample_generation.json', 'r') as f:
         result = json.load(f)
 
-    sample = result[distribution][str(size)][number-1]
+    sample = result[distribution][str(size)][number]
     dist = []
     if distribution == 'geometric':
         name = 'Геометрическое распределение'
-        k_values = np.arange(1, max(sample) + 1)
+        max_k = max(max(result[distribution][str(size)][j]) for j in range(5))
+        k_values = np.arange(1, max_k + 1)
         distribution_law = []
         for k in k_values:
             F = 1 - (1 - p) ** k # P(X ≤ k) = 1 - ( 1 - p)^k
@@ -27,27 +28,36 @@ def empirical_func(distribution, size, number): # Поиск значний дл
     elif distribution == 'erlang':
         name = 'Распределение Эрланга'
         x_values = np.linspace(0, max(sample), 50)
-        probability = []
+        distribution_law = []
         for x in x_values:
             sum_term = 0
             for k in range(m):
                 sum_term += (t * x) ** k / math.factorial(k)
             F = 1 - math.exp(-t * x) * sum_term # F = 1 - e^(-t*x) * Σ[(t*x)^k / k!] для k=0 до m-1
-            probability.append(F)
+            distribution_law.append(F)
         dist.append(x_values)
-        dist.append(probability)
+        dist.append(distribution_law)
     sorted_sample = np.sort(sample)
     F = np.arange(1, size + 1) / size
 
     return [sorted_sample, F, name, dist]
 
-def separate_graph(distribution, size, number): # Функция для построения отдельных графиков
-    data = empirical_func(distribution, size, number)
+def separate_graph(distribution, size): # Функция для построения отдельного графика
+    all_data = []
+    for i in range(5):
+        all_data.append(empirical_func(distribution, size, i))
 
-    plt.step(data[0], data[1], color='blue', where='post', label='ЭФР')
-    plt.plot(data[3][0], data[3][1], color='violet', label='Теоретическая ФР')
+    general_F = []
+    for i in range(size):
+        general_F.append(sum(data[1][i] for data in all_data) / 5)
 
-    plt.title(f'Эмпирическая функция распределения\n{data[2]}, выборка {number}, размер {size}')
+    x_values = all_data[0][3][0]
+    probability = np.mean([data[3][1] for data in all_data], axis=0)
+
+    plt.step(all_data[0][0], general_F, color='blue', where='post', label='ЭФР')
+    plt.plot(x_values, probability, color='violet', label='Теоретическая ФР')
+
+    plt.title(f'Эмпирическая функция распределения\n{all_data[0][2]}, размер {size}')
     plt.xlabel('t')
     plt.ylabel('Fn(t)')
     plt.legend()
@@ -55,16 +65,27 @@ def separate_graph(distribution, size, number): # Функция для пост
     plt.ylim(0, 1.1)
     plt.show()
 
-def all_graphs(distribution, size): # Функция для построения графиков для всех выборок распределения одного размера
-    colors = ['red', 'blue', 'black', 'green', 'orange']
-    for i in range(5):
-        data = empirical_func(distribution, size, i)
-        plt.step(data[0], data[1], color=colors[i], where='post', label=f'ЭФР {i+1}')
-        name = data[2]
-        dist_func = data[3]
+def all_graphs(distribution): # Функция для построения общего графика для всех размеров выборок
+    size = [5, 10, 100, 200, 400, 600, 800, 1000]
+    colors = ['red', 'blue', 'black', 'green', 'orange', 'grey', 'purple', 'lime']
+
+    for i in range(len(size)):
+        all_data = []
+        for j in range(5):
+            data = empirical_func(distribution, size[i], j)
+            all_data.append(data)
+            name = data[2]
+            dist_func = data[3]
+
+        general_F = []
+        for k in range(size[i]):
+            general_F.append(sum(data[1][k] for data in all_data) / 5)
+
+        plt.step(all_data[0][0], general_F, color=colors[i], where='post', label=f'ЭФР размер {size[i]}')
+
     plt.plot(dist_func[0], dist_func[1], color='violet', label='Теоретическая ФР')
 
-    plt.title(f'Эмпирическая функция распределения\n{name}, размер {size}')
+    plt.title(f'Эмпирическая функция распределения\n{name}')
     plt.xlabel('t')
     plt.ylabel('Fn(t)')
     plt.legend()
@@ -107,3 +128,18 @@ def calculation_D(distribution, size_m, size_n, number_m, number_n):
     D = np.sqrt((size_n * size_m) / (size_n + size_m)) * max_sup
     D = round(D, 6)
     return D
+
+
+def calculation_general_D(distribution, size_m, size_n):
+    all_D = []
+    for number_m in range(5):
+        for number_n in range(5):
+            D_value = calculation_D(distribution, size_m, size_n, number_m, number_n)
+            all_D.append(D_value)
+
+    general_D = sum(all_D) / len(all_D)
+
+    return round(general_D, 5)
+
+print(calculation_general_D('erlang',800,1000))
+

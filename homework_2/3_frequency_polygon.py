@@ -9,17 +9,27 @@ p = 0.45
 m = 14
 t = 1 / 8
 
-def frequency_polygon(distribution, size, number):
+def frequency_polygon(distribution, size):
     with open('sample_generation.json', 'r') as f:
         result = json.load(f)
 
-    sample = result[distribution][str(size)][number - 1]
+    all_frequencies = []
+    all_centers = []
+    for number in range(5):
+        sample = result[distribution][str(size)][number]
 
-    bins = 20
-    frequencies, intervals = np.histogram(sample, bins=20, density=False) #построение полигона частот
-    centers = (intervals[:-1] + intervals[1:]) / 2
-    plt.plot(centers, frequencies, 'b-', marker='o', markersize=4, label=f'Полигон')
+        bins = 20
+        frequencies, intervals = np.histogram(sample, bins=20, density=False) #построение полигона частот
+        centers = (intervals[:-1] + intervals[1:]) / 2
+        all_frequencies.append(frequencies)
+        all_centers.append(centers)
 
+    general_frequencies = np.mean(all_frequencies, axis=0) #усреднение
+    general_centers = np.mean(all_centers, axis=0)
+
+    plt.plot(general_centers, general_frequencies, 'b-', marker='o', markersize=4, label='Полигон')
+
+    sample = result[distribution][str(size)][0]
     if distribution == 'geometric':
         name = 'Геометрическое распределение'
         k_values = np.arange(1, max(sample) + 1)
@@ -43,7 +53,7 @@ def frequency_polygon(distribution, size, number):
 
         plt.plot(x_values, scalability_dist, color='violet', label='Плотность распределения')
 
-    plt.title(f'Полигон частот\n{name}, выборка {number}, размер {size}')
+    plt.title(f'Полигон частот\n{name}, размер {size}')
     plt.xlabel('Значение')
     plt.ylabel('Частота')
     plt.legend()

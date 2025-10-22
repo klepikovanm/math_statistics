@@ -49,13 +49,17 @@ def erlang_sample(n):
 size = [5, 10, 100, 200, 400, 600, 800, 1000]
 geometric_result = {}
 erlang_result = {}
+
+max_geometric = [geometric_sample(1000) for _ in range(5)]
+max_erlang = [erlang_sample(1000) for _ in range(5)]
+
 for i in size:
     if i not in geometric_result:
         geometric_result[i] = []
         erlang_result[i] = []
     for j in range(5):
-        geometric_result[i].append(geometric_sample(i))
-        erlang_result[i].append(erlang_sample(i))
+        geometric_result[i].append(max_geometric[j][:i])
+        erlang_result[i].append(max_erlang[j][:i])
 
 # Запись в файл
 result = {
