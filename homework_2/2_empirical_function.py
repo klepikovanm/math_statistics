@@ -142,4 +142,3 @@ def calculation_general_D(distribution, size_m, size_n):
     return round(general_D, 5)
 
 print(calculation_general_D('erlang',800,1000))
-
