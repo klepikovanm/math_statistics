@@ -141,4 +141,74 @@ def calculation_general_D(distribution, size_m, size_n):
 
     return round(general_D, 5)
 
-print(calculation_general_D('erlang',800,1000))
+
+"""ДЗ4. 2. Проверка гипотезы об однородности выборок"""
+a = 0.05
+lambda_a = 1.36
+
+def homogeneity_samples(distribution):
+    sizes = [5, 10, 100, 200, 400, 600, 800, 1000]
+    results = []
+
+    for i, m in enumerate(sizes):
+        for j, n in enumerate(sizes):
+            if i < j:
+                if distribution == 'geometric':
+                    D_n_m = calculation_general_D('geometric', m, n)
+                else:
+                    D_n_m = calculation_general_D('erlang', m, n)
+                D = lambda_a * np.sqrt((m + n) / (m * n))
+
+                if D_n_m >= D:
+                    conclusion = f"m={m}, n={n}: + ({D_n_m:.5f} >= {D:.5f})"
+                    res = True
+                else:
+                    conclusion = f"m={m}, n={n}: - ({D_n_m:.5f} < {D:.5f})"
+                    res = False
+
+                results.append({
+                    'm': m,
+                    'n': n,
+                    'D': D_n_m,
+                    'D_crit': D,
+                    'conclusion': conclusion,
+                    'res': res
+                })
+
+    return results
+
+
+def statistic(geom_results, erlang_results):
+
+    n = len(geom_results)
+    geom_plus = sum(1 for r in geom_results if r['res'])
+    geom_res = (geom_plus / n * 100) if n > 0 else 0
+
+    print(f"\nГЕОМЕТРИЧЕСКОЕ РАСПРЕДЕЛЕНИЕ:")
+    print(f"  Всего проверок: {n}")
+    print(f"  Отвергнуто: {n - geom_plus} ({geom_res:.1f}%)")
+    print(f"  Не отвергнуто: {geom_plus} ({100 - geom_res:.1f}%)")
+
+    m = len(erlang_results)
+    erlang_plus = sum(1 for r in erlang_results if r['res'])
+    erlang_res = (erlang_plus / m * 100) if m > 0 else 0
+
+    print(f"\n\nРАСПРЕДЕЛЕНИЕ ЭРЛАНГА:")
+    print(f"  Всего проверок: {m}")
+    print(f"  Отвергнуто: {m - erlang_plus} ({erlang_res:.1f}%)")
+    print(f"  Не отвергнуто: {erlang_plus} ({100 - erlang_res:.1f}%)")
+
+
+print("ПРОВЕРКА ГИПОТЕЗЫ ОБ ОДНОРОДНОСТИ ВЫБОРОК\n")
+print("ГЕОМЕТРИЧЕСКОЕ РАСПРЕДЕЛЕНИ\n")
+geom_results = homogeneity_samples('geometric')
+for result in geom_results:
+    print(result['conclusion'])
+
+
+print("РАСПРЕДЕЛЕНИЕ ЭРЛАНГА")
+erlang_results = homogeneity_samples('erlang')
+for result in erlang_results:
+        print(result['conclusion'])
+
+statistic(geom_results, erlang_results)
