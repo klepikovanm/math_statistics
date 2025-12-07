@@ -99,9 +99,9 @@ def x_2_statistic(distribution, sample, grouping):
             x_square += (frequency[i] - n * probability[i]) ** 2 / (n * probability[i])
 
     N = len(frequency)  #количество интервалов
-    n = N - 1 #степени свободы
+    s = N - 1 #степени свободы
 
-    t_a = chi2.ppf(1 - a, n) #квантиль распределения хи-квадрат
+    t_a = chi2.ppf(1 - a, s) #квантиль распределения хи-квадрат
 
     return x_square, t_a
 
