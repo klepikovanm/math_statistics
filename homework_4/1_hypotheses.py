@@ -12,28 +12,20 @@ t = 1/8
 a = 0.05
 lambda_a = 1.36
 
-def kolmogorov_statistic(distribution, sample):
+def kolmogorov_statistic(sample):
     n = len(sample)
     D_plus = 0
     D_minus = 0
     sorted_sample = sorted(sample)
 
-    if distribution == 'geometric':
-        for k in range(1, n + 1):
-            k_value = sorted_sample[k - 1]
-            F = 1 - (1 - p) ** k_value  # P(X ≤ k) = 1 - ( 1 - p)^k
-            D_plus = max(D_plus, abs(k / n - F))
-            D_minus = max(D_minus, abs(F - (k - 1) / n))
-
-    elif distribution == 'erlang':
-        for k in range(1, n + 1):
-            k_value = sorted_sample[k - 1]
-            sum_term = 0
-            for i in range(m):
-                sum_term += (t * k_value) ** i / math.factorial(i)
-            F = 1 - math.exp(-t * k_value) * sum_term
-            D_plus = max(D_plus, abs(k / n - F))
-            D_minus = max(D_minus, abs(F - (k - 1) / n))
+    for k in range(1, n + 1):
+        k_value = sorted_sample[k - 1]
+        sum_term = 0
+        for i in range(m):
+            sum_term += (t * k_value) ** i / math.factorial(i)
+        F = 1 - math.exp(-t * k_value) * sum_term
+        D_plus = max(D_plus, abs(k / n - F))
+        D_minus = max(D_minus, abs(F - (k - 1) / n))
 
     D = max(D_plus, D_minus)
     return D
@@ -111,35 +103,35 @@ with open('../homework_2/sample_generation.json', 'r', encoding='utf-8') as f:
 kolmogorov = {}
 x_2 = {}
 for distribution, data in result.items():
-    kolmogorov[distribution] = {}
     x_2[distribution] = {}
     for grouping in ['sturges', 'brooks_carruther', 'sqrt']:
         x_2[distribution][grouping] = {}
     for size, samples in data.items():
         for sample in samples:
-            if len(sample) not in kolmogorov[distribution]:
-                kolmogorov[distribution][len(sample)] = []
+            if len(sample) not in kolmogorov:
+                kolmogorov[len(sample)] = []
             for grouping in ['sturges', 'brooks_carruther', 'sqrt']:
                 if len(sample) not in x_2[distribution][grouping]:
                     x_2[distribution][grouping][len(sample)] = []
 
             """Критерий Колмогорова"""
-            D = kolmogorov_statistic(distribution, sample)
+            if distribution == 'erlang':
+                D = kolmogorov_statistic(sample)
 
-            if len(sample) >= 20:
-                if (math.sqrt(len(sample)) * D >= lambda_a):
-                    kolmogorov[distribution][len(sample)].append(
-                        f"{round(math.sqrt(len(sample)) * D, 3)} >= {lambda_a}, -")
+                if len(sample) >= 20:
+                    if (math.sqrt(len(sample)) * D >= lambda_a):
+                        kolmogorov[len(sample)].append(
+                            f"{round(math.sqrt(len(sample)) * D, 3)} >= {lambda_a}, -")
+                    else:
+                        kolmogorov[len(sample)].append(
+                            f"{round(math.sqrt(len(sample)) * D, 3)} < {lambda_a}, +")
                 else:
-                    kolmogorov[distribution][len(sample)].append(
-                        f"{round(math.sqrt(len(sample)) * D, 3)} < {lambda_a}, +")
-            else:
-                if ((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))) >= lambda_a):
-                    kolmogorov[distribution][len(sample)].append(
-                        f"{round((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))), 3)} >= {lambda_a}, -")
-                else:
-                    kolmogorov[distribution][len(sample)].append(
-                        f"{round((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))), 3)} < {lambda_a}, +")
+                    if ((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))) >= lambda_a):
+                        kolmogorov[len(sample)].append(
+                            f"{round((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))), 3)} >= {lambda_a}, -")
+                    else:
+                        kolmogorov[len(sample)].append(
+                            f"{round((6 * len(sample) * D + 1) / (6 * math.sqrt(len(sample))), 3)} < {lambda_a}, +")
 
             """Критерий хи-квадрат"""
             for grouping in ['sturges', 'brooks_carruther', 'sqrt']:
@@ -154,14 +146,13 @@ for distribution, data in result.items():
 
 def statistic(statist):
     if statist == kolmogorov:
-        for distribution in ['geometric', 'erlang']:
-            plus_tests = 0
-            for size in statist[distribution]:
-                results = statist[distribution][size]
-                for r in results:
-                    if "+" in r:
-                        plus_tests += 1
-            print(f"{distribution}: {plus_tests}/{40} ({plus_tests / 40 * 100:.1f}%) прошли тест")
+        plus_tests = 0
+        for size in statist:
+            results = statist[size]
+            for r in results:
+                if "+" in r:
+                    plus_tests += 1
+        print(f"erlang: {plus_tests}/{40} ({plus_tests / 40 * 100:.1f}%) прошли тест")
     elif statist == x_2:
         for distribution in ['geometric', 'erlang']:
             plus_tests = 0
@@ -172,8 +163,7 @@ def statistic(statist):
                         plus_tests += 1
             print(f"{distribution}: {plus_tests}/{40} ({plus_tests / 40 * 100:.1f}%) прошли тест")
 
-print("КРИТЕРИЙ СОГЛАСИЯ КОЛМОГОРОВА (СМИРНОВА)\nГеометрическое распределение:\n",kolmogorov["geometric"])
-print("\nРаспределение Эрланга:\n",kolmogorov["erlang"])
+print("КРИТЕРИЙ СОГЛАСИЯ КОЛМОГОРОВА (СМИРНОВА)\nРаспределение Эрланга:\n",kolmogorov)
 print("\nСтатистика:")
 statistic(kolmogorov)
 
